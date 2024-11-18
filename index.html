@@ -1,0 +1,119 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Slide Puzzle Game</title>
+    <style>
+        body {
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            margin: 0;
+            background-image: url('images/background.jpg'); /* Path to your background image */ 
+            background-size: cover; /* Ensures the image covers the entire background */
+            background-repeat: no-repeat; /* Prevents the image from repeating */ 
+            background-attachment: fixed; /* Keeps the background fixed during scrolling */
+            text-align: center;
+        }
+        header {
+            margin-bottom: 20px;
+        }
+        .container {
+            display: grid;
+            grid-template-columns: repeat(4, 100px);
+            grid-template-rows: repeat(4, 100px);
+            gap: 5px;
+        }
+        .tile {
+            display: block;
+            width: 100%;
+            height: 100%;
+            background-size: 400px 400px;
+            cursor: pointer;
+            user-select: none;
+        }
+        .tile.empty {
+            background-color: transparent;
+            cursor: default;
+        }
+        footer {
+            margin-top: 20px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <!-- Puzzle tiles will be dynamically generated here -->
+    </div>
+    <script>
+        class SlidePuzzle {
+            constructor(size) {
+                this.size = size;
+                this.tiles = [];
+                this.container = document.querySelector('.container');
+                this.imagePieces = [];
+                this.initializeBoard();
+                this.shuffleBoard();
+                this.renderBoard();
+            }
+
+            initializeBoard() {
+                for (let i = 0; i < this.size * this.size - 1; i++) {
+                    this.tiles.push(i + 1);
+                }
+                this.tiles.push(0); // Empty space
+                this.createImagePieces();
+            }
+
+            createImagePieces() {
+                const imageUrl = 'images/puzzle.jpg'; // Path to your image
+                for (let row = 0; row < this.size; row++) {
+                    for (let col = 0; col < this.size; col++) {
+                        const xPos = -(col * 100);
+                        const yPos = -(row * 100);
+                        this.imagePieces.push(`background-image: url('${imageUrl}'); background-position: ${xPos}px ${yPos}px;`);
+                    }
+                }
+            }
+
+            shuffleBoard() {
+                for (let i = this.tiles.length - 1; i > 0; i--) {
+                    const j = Math.floor(Math.random() * (i + 1));
+                    [this.tiles[i], this.tiles[j]] = [this.tiles[j], this.tiles[i]];
+                }
+            }
+
+            renderBoard() {
+                this.container.innerHTML = '';
+                this.tiles.forEach((tile, index) => {
+                    const tileElement = document.createElement('div');
+                    tileElement.className = 'tile' + (tile === 0 ? ' empty' : '');
+                    if (tile !== 0) {
+                        tileElement.style.cssText = this.imagePieces[tile - 1];
+                    }
+                    tileElement.addEventListener('click', () => this.moveTile(index));
+                    this.container.appendChild(tileElement);
+                });
+            }
+
+            moveTile(index) {
+                const emptyIndex = this.tiles.indexOf(0);
+                const row = Math.floor(index / this.size);
+                const col = index % this.size;
+                const emptyRow = Math.floor(emptyIndex / this.size);
+                const emptyCol = emptyIndex % this.size;
+
+                if (Math.abs(row - emptyRow) + Math.abs(col - emptyCol) === 1) {
+                    [this.tiles[index], this.tiles[emptyIndex]] = [this.tiles[emptyIndex], this.tiles[index]];
+                    this.renderBoard();
+                }
+            }
+        }
+
+        new SlidePuzzle(4);
+    </script>
+</body>
+</html>
